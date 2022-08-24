@@ -15,8 +15,20 @@ def create_data_config(params):
 
 def calculate(data, params):
     """
-    todo: explain the data format here:
+    format of `data`:
+    {
+        "indicators": {
+            "indicator_name_1": [
+                {
+                    "timestamp": ...,
+                    "value": ...
+                }
+            ],
+            ...
+        }
+    }
     """
+
     output = []
     indicator_name = params["indicator_name"]
     series_records = data["indicators"][indicator_name]  # [{timestamp: ..., value: ...}]
