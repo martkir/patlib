@@ -1,4 +1,4 @@
-from scripts.indicators.get import get_indicators
+from scripts.utils import get_indicators
 import pandas as pd
 import os
 import chart
