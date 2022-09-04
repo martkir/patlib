@@ -2,6 +2,8 @@ import math
 
 
 def create_data_config(params):
+    # import json
+    # print("params: ", json.dumps(params, indent=4))
     return {
         "indicators": [
             {

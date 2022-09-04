@@ -294,9 +294,9 @@ def get_process_chart_data_func(pattern_name):
         return None
 
 
-def get_pattern_data(coin_id, pattern_name, pattern_params, chart_window_size):
+def get_patterns(coin_id, pattern_name, pattern_params, chart_window_size):
     data_config = create_script_data_config(pattern_name, pattern_params)
-    indicators_records = get_indicators(coin_id, data_config)
+    indicators_records = get_indicators(coin_id, data_config["indicators"])
 
     signal_func = get_signal_func(pattern_name)
     process_chart_data_func = get_process_chart_data_func(pattern_name)
@@ -331,6 +331,3 @@ def get_pattern_data(coin_id, pattern_name, pattern_params, chart_window_size):
             }
 
             yield signal_data, chart_data
-
-
-
