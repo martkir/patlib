@@ -2,12 +2,21 @@ import pandas as pd
 import importlib
 import json
 from functools import partial
+import warnings
+from datetime import datetime
 
 
 def create_script_id(script_type, script_name, script_params):
     params_str = json.dumps(script_params)
     script_id = f"{script_type}+{script_name}+{params_str}"
     return script_id
+
+
+def create_script_data_config(script_name, script_params):
+    module = importlib.import_module(f"scripts.patterns.{script_name}.script")
+    create_data_config_func = getattr(module, "create_data_config")
+    data_config = create_data_config_func(script_params)
+    return data_config
 
 
 def parse_script_id(script_id):
@@ -268,5 +277,60 @@ def get_indicators(coin_id, config_list):
     output = df_indicators.to_dict("records")
 
     return output
+
+
+def get_signal_func(pattern_name):
+    pattern_module = importlib.import_module(f"scripts.patterns.{pattern_name}.script")
+    signal_func = getattr(pattern_module, "signal")
+    return signal_func
+
+
+def get_process_chart_data_func(pattern_name):
+    pattern_module = importlib.import_module(f"scripts.patterns.{pattern_name}.script")
+    try:
+        process_chart_data_func = getattr(pattern_module, "process_chart_data")
+        return process_chart_data_func
+    except:
+        return None
+
+
+def get_pattern_data(coin_id, pattern_name, pattern_params, chart_window_size):
+    data_config = create_script_data_config(pattern_name, pattern_params)
+    indicators_records = get_indicators(coin_id, data_config)
+
+    signal_func = get_signal_func(pattern_name)
+    process_chart_data_func = get_process_chart_data_func(pattern_name)
+
+    for t in reversed(range(len(indicators_records))):  # note: most recent pattern first
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings('error')
+            try:
+                is_signal, signal_meta = signal_func(t, indicators_records, pattern_params)
+            except Exception as e:
+                print(f"[ERROR] Error calling signal function. Got {str(e)} => return is_signal = False")
+                is_signal = False
+                signal_meta = None
+
+        if is_signal:
+            lb_window = max(0, t - chart_window_size)
+            ub_window = min(t + chart_window_size + 1, len(indicators_records))
+            chart_data = indicators_records[lb_window: ub_window]
+            if process_chart_data_func is not None:
+                chart_data = process_chart_data_func(chart_data, signal_meta)
+
+            signal_period = t
+            signal_timestamp = indicators_records[t]["timestamp"]
+            signal_data = {
+                "coin_id": coin_id,
+                "timestamp": signal_timestamp,
+                "signal_period": signal_period,
+                "signal_indicators": indicators_records[t],
+                "signal_meta": signal_meta,
+                "date": datetime.utcfromtimestamp(signal_timestamp).strftime("%Y-%m-%d %H:%M:%S UTC"),
+            }
+
+            yield signal_data, chart_data
+
 
 
