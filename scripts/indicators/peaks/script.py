@@ -28,7 +28,6 @@ def calculate(data, params):
         }
     }
     """
-
     output = []
     indicator_name = params["indicator_name"]
     series_records = data["indicators"][indicator_name]  # [{timestamp: ..., value: ...}]
