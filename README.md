@@ -25,7 +25,7 @@ Plots are saved to the `scripts/patterns/<pattern_name>/test/plots` directory.
 
 Example of plot generated testing the `peaks` pattern:
 
-![plot](./scripts/patterns/peaks/test/plots/coin_1_date_2022-06-21 15:59:59 UTC.png)
+![plot](scripts/patterns/peaks/test/plots/coin_1_date_2022-06-21 15:59:59 UTC.png)
 
 ### Testing an indicator
 
